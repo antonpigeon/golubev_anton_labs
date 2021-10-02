@@ -14,7 +14,6 @@ def draw_fence(surface: pygame.Surface, color: pygame.Color, rect: pygame.Rect,
     :param starting_x: отступ первой вертикальной линии
     :param step: расстояние между вертикальными линиями
     :param max_offset: максимальное расстояние, на которое линия может быть случайно сдвинута
-    :return: NONE
     """
     pygame.draw.rect(surface, color, rect)
     x = rect[0] + starting_x
@@ -107,9 +106,12 @@ def draw_dog_back_leg(surface: pygame.Surface, color: pygame.Color,
     width2 = width//5
     width3 = 2*width//3
     pygame.draw.circle(surface, color, (top[0], top[1] + height//5), height//5)
-    pygame.draw.ellipse(surface, color, (top[0] + width//4, top[1] + height//5, width2, 5*height//8))
-    pygame.draw.ellipse(surface, color, (top[0] - width//5, top[1] + 3*height//4, width3, height//6))
-
+    if facing_left is True:
+        pygame.draw.ellipse(surface, color, (top[0] + width//4, top[1] + height//5, width2, 5*height//8))
+        pygame.draw.ellipse(surface, color, (top[0] - width//5, top[1] + 3*height//4, width3, height//6))
+    else:
+        pygame.draw.ellipse(surface, color, (top[0] - width // 4 - width2, top[1] + height // 5, width2, 5 * height // 8))
+        pygame.draw.ellipse(surface, color, (top[0] - 7*width//15, top[1] + 3*height//4, width3, height//6))
 
 
 def draw_dog(surface: pygame.Surface, color: pygame.Color, left_top: tuple[int, int],
@@ -121,7 +123,6 @@ def draw_dog(surface: pygame.Surface, color: pygame.Color, left_top: tuple[int, 
     :param facing_left: True - собака смотрит налево, False - направо. По умолчанию True
     """
     height = int(2/3 * width)
-    pygame.draw.rect(surface, 'grey', (left_top[0], left_top[1], width, height))
     if facing_left is True:
         draw_dog_forward_leg(surface, color, (left_top[0] + width//3, left_top[1] + height//2),
                              5*height//12, facing_left=True)
@@ -140,11 +141,14 @@ def draw_dog(surface: pygame.Surface, color: pygame.Color, left_top: tuple[int, 
                              5*height//12, facing_left=False)
         draw_dog_forward_leg(surface, color, (left_top[0] + 15*width//18, left_top[1] + 5*height//14),
                              5*height//12, facing_left=False)
+        draw_dog_back_leg(surface, color,
+                          (left_top[0] + 1*width//5, left_top[1] + height//4), height//2, facing_left=False)
+        draw_dog_back_leg(surface, color,
+                          (left_top[0] + 1*width//3, left_top[1] + height//9), height//2, facing_left=False)
         draw_dog_body(surface, color,
                       (left_top[0] + (width - width//10 - 7*width//12), left_top[1] + width//9, 7*width//12, 2*height//5),
                       (left_top[0] + (width - 5*width//12 - 7*width//18), left_top[1] + width//10, 7*width//18, height//4))
         draw_dog_head(surface, color, (left_top[0] + width - width // 5, left_top[1] + width // 7), 2 * width // 7)
-
 
 
 # main начинается здесь
@@ -152,9 +156,9 @@ FPS = 30
 screen = pygame.display.set_mode((600, 600))
 
 pygame.draw.rect(screen, 'lightblue', (0, 0, 600, 300))  # небо
-pygame.draw.rect(screen, 'lightgreen', (0, 300, 600, 300))  # трава
-draw_fence(screen, 'yellow', (50, 100, 400, 200), 10, 20, 5)
-draw_dog(screen, (108, 103, 83), (100, 300), 400, facing_left=True)
+pygame.draw.rect(screen, 'lightgreen', (0, 350, 600, 250))  # трава
+draw_fence(screen, 'yellow', (0, 100, 600, 250), 10, 30, 3)
+draw_dog(screen, (108, 103, 83), (50, 360), 250, facing_left=True)
 #draw_dog(screen, (108, 103, 83), (100, 300), 400, facing_left=False)
 
 pygame.display.update()
