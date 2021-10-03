@@ -151,6 +151,53 @@ def draw_dog(surface: pygame.Surface, color: pygame.Color, left_top: tuple[int, 
         draw_dog_head(surface, color, (left_top[0] + width - width // 5, left_top[1] + width // 7), 2 * width // 7)
 
 
+def draw_doghouse(surface: pygame.Surface, roof_color: pygame.Color, wall_color: pygame.Color,
+                  top_left: tuple[int, int], width: int):
+    """
+    рисует конуру
+    :param roof_color: цвет крыши
+    :param wall_color: цвет стен
+    :param top_left: координаты верхнего левого угла изображения
+    :param width: ширина изображения
+    """
+    height = width
+    x, y = top_left
+    # передний треугольник
+    pygame.draw.polygon(surface, roof_color, ((x, y + height//2),
+                                              (x + width//3, y + height//8),
+                                              (x + 2*width//3, y + 5*height//8)))
+    pygame.draw.aalines(surface, 'black', True, ((x, y + height//2),
+                                                 (x + width//3, y + height//8),
+                                                 (x + 2*width//3, y + 5*height//8)))
+    # бок крыши
+    pygame.draw.polygon(surface, roof_color, ((x + width//3, y + height//8), (x + 2*width//3, y),
+                                              (x + width, y + height//2), (x + 2*width//3, y + 5*height//8)))
+    pygame.draw.aalines(surface, 'black', True, ((x + width//3, y + height//8), (x + 2*width//3, y),
+                                                 (x + width, y + height//2), (x + 2*width//3, y + 5*height//8)))
+    # передняя стенка
+    pygame.draw.polygon(surface, wall_color, ((x, y + height//2), (x + 2*width//3, y + 5*height//8),
+                                              (x + 2*width//3, y + height), (x, y + 7*height//8)))
+    pygame.draw.aalines(surface, 'black', True, ((x, y + height//2), (x + 2*width//3, y + 5*height//8),
+                                                 (x + 2*width//3, y + height), (x, y + 7*height//8)))
+    # боковая стенка
+    pygame.draw.polygon(surface, wall_color, ((x + 2*width//3, y + 5*height//8), (x + width, y + height//2),
+                                              (x + width, y + 7*height//8), (x + 2*width//3, y + height)))
+    pygame.draw.aalines(surface, 'black', True, ((x + 2*width//3, y + 5*height//8), (x + width, y + height//2),
+                                                 (x + width, y + 7*height//8), (x + 2*width//3, y + height)))
+    # вход
+    pygame.draw.circle(surface, 'black', (x + width//3, y + 3*height//4), height//7)
+    # цепь
+    w0 = 20
+    x = x + width//4
+    y = y + 7*height//8
+    for i in range (10):
+        w = w0 + random.randint(-2, 2)
+        h = random.randint(5, 10)
+        pygame.draw.ellipse(surface, 'black', (x, y, w, h), width=2)
+        x = x - w + 5  # коэффициенты подобраны экспериментально
+        y = y + h - 5  # вроде красиво выглядит
+
+
 # main начинается здесь
 FPS = 30
 screen = pygame.display.set_mode((600, 600))
@@ -159,7 +206,7 @@ pygame.draw.rect(screen, 'lightblue', (0, 0, 600, 300))  # небо
 pygame.draw.rect(screen, 'lightgreen', (0, 350, 600, 250))  # трава
 draw_fence(screen, 'yellow', (0, 100, 600, 250), 10, 30, 3)
 draw_dog(screen, (108, 103, 83), (50, 360), 250, facing_left=True)
-#draw_dog(screen, (108, 103, 83), (100, 300), 400, facing_left=False)
+draw_doghouse(screen, 'red', 'yellow', (300, 300), 250)
 
 pygame.display.update()
 clock = pygame.time.Clock()
