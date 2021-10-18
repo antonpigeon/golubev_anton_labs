@@ -13,8 +13,7 @@ total_box_y = 50
 
 FPS = 30
 screen = pygame.display.set_mode((x_pixels, y_pixels))
-popping_speed = 5
-max_pop_r = 70
+popping_speed = 3
 
 RED = (255, 0, 0)
 BLUE = (0, 0, 255)
@@ -31,12 +30,14 @@ my_font = pygame.freetype.SysFont('Times New Roman', 15)
 class Ball:
     def __init__(self, surface: pygame.Surface):
         self.surface = surface
+        self.points_cost = 1
         self.is_popping = False
         self.stopped_popping = False
         self.x = randint(total_box_x, x_pixels - x_pixels // 10)
         self.y = randint(total_box_y, y_pixels - y_pixels // 10)
         self.r = randint(20, 30)
         self.popping_r = self.r
+        self.max_pop_r = self.r * 2.5
         self.x_speed = randint(-3, 3)
         self.y_speed = randint(-3, 3)
         self.color = COLORS[randint(0, len(COLORS) - 1)]
@@ -62,7 +63,7 @@ class Ball:
     def advance_popping(self):
         pygame.draw.circle(self.surface, self.color, (self.x, self.y), self.popping_r)
         self.popping_r += popping_speed
-        if self.popping_r >= max_pop_r:
+        if self.popping_r >= self.max_pop_r:
             self.stopped_popping = True
 
     def update(self):
@@ -73,36 +74,84 @@ class Ball:
             self.advance_popping()
 
 
+class Square:
+    def __init__(self, surface: pygame.Surface):
+        self.surface = surface
+        self.points_cost = 3
+        self.is_popping = False
+        self.stopped_popping = False
+        self.x = randint(total_box_x, x_pixels - x_pixels // 10)
+        self.y = randint(total_box_y, y_pixels - y_pixels // 10)
+        self.side = randint(20, 30)
+        self.popping_side = self.side
+        self.max_pop_side = self.side * 2.5
+        self.ticks_since_tp = 0
+        self.color = COLORS[randint(0, len(COLORS) - 1)]
+        pygame.draw.rect(surface, self.color, (self.x - self.side//2, self.y - self.side//2,
+                                               self.side, self.side))
+
+    def contains_point(self, x: int, y: int):
+        return (self.x - self.side//2 <= x <= self.x + self.side//2 and
+                self.y - self.side//2 <= y <= self.y + self.side//2)
+
+    def blackout(self):
+        pygame.draw.rect(surface, (0, 0, 0), (self.x - self.side // 2, self.y - self.side // 2,
+                                              self.side, self.side))
+
+    def move(self):
+        if self.ticks_since_tp == 30:
+            self.ticks_since_tp = 0
+            self.x = randint(total_box_x, x_pixels - x_pixels // 10)
+            self.y = randint(total_box_y, y_pixels - y_pixels // 10)
+        else:
+            self.ticks_since_tp += 1
+        pygame.draw.rect(self.surface, self.color, (self.x - self.side // 2, self.y - self.side // 2,
+                                                    self.side, self.side))
+
+    def advance_popping(self):
+        pygame.draw.rect(self.surface, self.color, (self.x - self.popping_side // 2, self.y - self.popping_side // 2,
+                                                    self.popping_side, self.popping_side))
+        self.popping_side += popping_speed
+        if self.popping_side >= self.max_pop_side:
+            self.stopped_popping = True
+
+    def update(self):
+        if self.is_popping is False:
+            self.move()
+        else:
+            self.advance_popping()
+
+
 pygame.display.update()
 clock = pygame.time.Clock()
 finished = False
 
-balls = []
+targets = []
 total = 0
 ticks_since_append = 0
 
 while not finished:
     clock.tick(FPS)
     if ticks_since_append == 30:
-        balls.append(Ball(screen))
+        targets.append(Ball(screen) if randint(0, 1) == 1 else Square(screen))
         ticks_since_append = 0
     ticks_since_append += 1
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             finished = True
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            for ball in balls[::-1]:
-                if (ball.contains_point(event.pos[0], event.pos[1]) is True
-                        and ball.is_popping is False):
-                    # ball.blackout()
-                    ball.is_popping = True
-                    total += 1
-                    break  # Чтобы убирать только 1 шар за раз
+            for target in targets[::-1]:
+                if (target.contains_point(event.pos[0], event.pos[1]) is True
+                        and target.is_popping is False):
+                    target.is_popping = True
+                    total += target.points_cost
+                    break  # Чтобы убирать только 1 цель за раз
     screen.fill((0, 0, 0))
-    for ball in balls:
-        ball.update()
-        if ball.stopped_popping is True:
-            balls.remove(ball)
+    for target in targets:
+        target.update()
+        if target.stopped_popping is True:
+            targets.remove(target)
 
     # Обновление текста
     pygame.draw.rect(screen, (0, 0, 0), (0, 0, total_box_x, total_box_y))
