@@ -171,6 +171,9 @@ while not to_exit:
                 finished = True
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
+                    dt[player_name] = total
+                    with open('scores.json', 'w') as f:
+                        json.dump(dt, f)
                     pygame.quit()
                 if event.key == pygame.K_SPACE:
                     finished = True
